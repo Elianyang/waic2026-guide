@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WAIC 2026 · 教育活动日程板</title>
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap");
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--purple:#7C3AED;--purple-light:#EDE9FE;--purple-dark:#5B21B6;--ink:#1a1a2e;--paper:#FAF9FE;--accent:#7C3AED;--accent2:#457b9d;--accent3:#2a9d8f;--gold:#e9c46a;--muted:#6c757d;--card:#fff;--shadow:0 2px 16px rgba(124,58,237,.06)}
+body{font-family:"Noto Sans SC",sans-serif;background:var(--paper);color:var(--ink);line-height:1.6}
+
+/* Hero */
+.hero{background:linear-gradient(135deg,#3B0764 0%,#5B21B6 40%,#7C3AED 100%);color:#fff;padding:0;position:relative;overflow:hidden}
+.hero-inner{display:flex;align-items:center;gap:24px;padding:40px 32px;max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.hero-mascot{width:120px;height:120px;flex-shrink:0;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))}
+.hero-text h1{font-family:"Noto Serif SC",serif;font-size:clamp(1.5rem,4vw,2.2rem);margin-bottom:4px}
+.hero-text .sub{font-size:.9rem;opacity:.8;font-weight:300}
+.hero-text .dates{display:inline-block;margin-top:10px;padding:5px 16px;border:1px solid rgba(255,255,255,.35);border-radius:24px;font-size:.8rem;letter-spacing:1.5px}
+.hero::after{content:"";position:absolute;top:-30%;right:-10%;width:50%;height:160%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 60%);pointer-events:none}
+
+/* QR Banner */
+.qr-banner{background:linear-gradient(135deg,var(--purple-dark),var(--purple));padding:24px 32px;display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;max-width:1100px;margin:0 auto}
+.qr-img{width:100px;height:100px;border-radius:8px;border:3px solid rgba(255,255,255,.8);flex-shrink:0;object-fit:cover}
+.qr-text{color:#fff;min-width:200px;max-width:500px}
+.qr-text h3{font-size:1.05rem;margin-bottom:4px}
+.qr-text p{font-size:.85rem;opacity:.85;line-height:1.5}
+.qr-text .hint{font-size:.75rem;opacity:.6;margin-top:4px}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:0 16px}
+
+/* Tabs */
+.tabs{display:flex;gap:0;border-bottom:2px solid #e0d8f0;position:sticky;top:0;z-index:10;background:var(--paper);padding-top:10px}
+.tab{padding:10px 18px;cursor:pointer;font-weight:500;font-size:.88rem;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;color:var(--muted);white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
+.tab-panel{display:none;padding:16px 0}
+.tab-panel.active{display:block}
+
+/* Quick links */
+.links-bar{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.link-card{flex:1;min-width:180px;background:var(--card);border-radius:8px;padding:12px 14px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink);border-top:3px solid var(--accent);transition:transform .2s}
+.link-card:hover{transform:translateY(-2px)}
+.link-card h4{font-size:.88rem;margin-bottom:2px}
+.link-card p{font-size:.72rem;color:var(--muted)}
+
+/* Stats */
+.stats-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.stat{background:var(--card);border-radius:8px;padding:10px 14px;box-shadow:var(--shadow);text-align:center;flex:1;min-width:72px}
+.stat .num{font-size:1.3rem;font-weight:700;color:var(--accent)}
+.stat .label{font-size:.7rem;color:var(--muted)}
+
+/* Day header */
+.day-header{margin:20px 0 10px;padding:9px 14px;background:linear-gradient(135deg,var(--purple-dark),var(--purple));color:#fff;border-radius:8px;font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:8px}
+.day-header .tag{font-size:.65rem;background:rgba(255,255,255,.25);padding:2px 8px;border-radius:10px;margin-left:auto;font-weight:500}
+.day-header .tag.hl{background:var(--gold);color:var(--ink)}
+
+/* Time row */
+.time-row{display:flex;align-items:flex-start;margin-bottom:10px;gap:10px}
+.time-label{min-width:82px;font-size:.78rem;font-weight:700;color:var(--accent);padding-top:16px;flex-shrink:0;text-align:right}
+.parallel-cards{display:flex;gap:8px;flex:1;overflow-x:auto;padding-bottom:4px}
+.parallel-cards::-webkit-scrollbar{height:3px}
+.parallel-cards::-webkit-scrollbar-thumb{background:#d0c8e8;border-radius:2px}
+
+/* Event card */
+.event-card{background:var(--card);border-radius:8px;padding:12px 14px;box-shadow:var(--shadow);border-left:3px solid var(--accent);position:relative;transition:transform .15s,box-shadow .15s;flex:1;min-width:180px}
+.event-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(124,58,237,.1)}
+.event-card.edu{border-left-color:var(--accent)}
+.event-card.side{border-left-color:var(--accent3)}
+.event-card.night{border-left-color:var(--gold);background:linear-gradient(135deg,#FFFBEB,#fff)}
+.event-card.selected{box-shadow:0 0 0 2px var(--accent3),0 4px 16px rgba(42,157,143,.15)}
+
+/* Checkbox */
+.check-label{position:absolute;top:12px;right:12px;cursor:pointer}
+.check-label input{display:none}
+.checkmark{width:20px;height:20px;border:2px solid #d0c8e8;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.check-label input:checked~.checkmark{background:var(--accent3);border-color:var(--accent3)}
+.check-label input:checked~.checkmark::after{content:"✓";color:#fff;font-size:12px;font-weight:700}
+
+.card-body .time{font-size:.72rem;color:var(--accent);font-weight:700;margin-bottom:2px}
+.card-body h3{font-size:.88rem;font-weight:700;margin-bottom:4px;line-height:1.35;padding-right:28px}
+.card-body .venue{font-size:.75rem;color:var(--muted);margin-bottom:4px}
+.card-body .desc{font-size:.8rem;color:#555;line-height:1.45}
+.tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.tag-sm{font-size:.65rem;padding:1px 7px;border-radius:8px;background:var(--purple-light);color:var(--accent);font-weight:500}
+
+/* Route panel */
+.route-panel{background:var(--card);border-radius:10px;padding:20px;box-shadow:var(--shadow);min-height:100px}
+.route-panel h3{font-size:1.05rem;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.route-panel h3 .count{background:var(--accent3);color:#fff;font-size:.72rem;padding:2px 8px;border-radius:10px}
+.route-empty{color:var(--muted);font-size:.88rem;padding:24px 0;text-align:center}
+.route-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f3f0fa;position:relative}
+.route-item:last-child{border-bottom:none}
+.route-num{width:22px;height:22px;border-radius:50%;background:var(--accent3);color:#fff;font-size:.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.route-item .ri-body{flex:1}
+.route-item .ri-time{font-size:.72rem;color:var(--accent);font-weight:700}
+.route-item .ri-title{font-size:.88rem;font-weight:700;margin:2px 0}
+.route-item .ri-venue{font-size:.75rem;color:var(--accent2)}
+.route-item .ri-remove{color:var(--muted);cursor:pointer;font-size:.8rem;padding:2px 6px;border-radius:4px}
+.route-item .ri-remove:hover{background:#fef2f2;color:#ef4444}
+.route-visual{margin-top:14px;padding:14px;background:#faf9fe;border-radius:8px}
+.route-visual .rv-title{font-size:.82rem;font-weight:700;color:var(--accent);margin-bottom:8px}
+.route-stop{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:.82rem}
+.route-stop .rv-dot{width:8px;height:8px;border-radius:50%;background:var(--accent3);flex-shrink:0}
+.route-stop .rv-conn{width:2px;height:14px;background:#e0d8f0;margin-left:3px}
+.route-stop .rv-label{color:var(--gold);font-size:.75rem;font-weight:500}
+
+/* Venue grid */
+.venue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px}
+.venue-card{background:var(--card);border-radius:8px;padding:14px;box-shadow:var(--shadow);border-top:3px solid var(--accent)}
+.venue-card h3{font-size:.92rem;margin-bottom:3px}
+.venue-card .role{font-size:.72rem;color:var(--accent3);margin-bottom:5px;font-weight:500}
+.venue-card .addr{font-size:.8rem;color:var(--muted);margin-bottom:3px}
+.venue-card .metro{font-size:.8rem}
+
+/* Shuttle */
+.shuttle-row{display:flex;justify-content:space-between;padding:9px 14px;background:var(--card);border-radius:8px;box-shadow:var(--shadow);margin-bottom:6px;font-size:.85rem}
+.shuttle-route{font-weight:700;color:var(--accent)}
+.shuttle-freq{color:var(--muted)}
+
+/* Buttons */
+.export-bar{margin-top:14px;display:flex;gap:8px}
+.btn{padding:7px 18px;border:none;border-radius:6px;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--purple-dark)}
+.btn-outline{background:transparent;border:1px solid var(--accent);color:var(--accent)}
+.btn-outline:hover{background:var(--accent);color:#fff}
+
+.footer{text-align:center;padding:24px 16px;color:var(--muted);font-size:.75rem;border-top:1px solid #e0d8f0;margin-top:24px}
+
+@media(max-width:700px){
+  .hero-inner{flex-direction:column;text-align:center;padding:28px 16px}
+  .hero-mascot{width:90px;height:90px}
+  .qr-banner{flex-direction:column;text-align:center;padding:20px 16px}
+  .time-row{flex-direction:column;gap:4px}
+  .time-label{min-width:auto;text-align:left;padding-top:0}
+  .parallel-cards{flex-direction:column}
+  .event-card{min-width:auto}
+  .tabs{overflow-x:auto}
+}
+
+/* EDU Section */
+.edu-section{margin:20px 0;padding:20px;background:linear-gradient(135deg,#FAF5FF,#F0E6FF);border-radius:12px;border:1px solid #E0D0F0}
+.edu-header{display:flex;align-items:center;gap:16px;margin-bottom:16px}
+.edu-mascot{width:80px;height:80px;flex-shrink:0}
+.edu-intro h2{font-family:"Noto Serif SC",serif;font-size:1.15rem;color:var(--purple-dark);margin-bottom:4px}
+.edu-intro p{font-size:.88rem;color:#555;line-height:1.5}
+.edu-link{display:inline-block;margin-top:6px;font-size:.82rem;color:var(--accent);text-decoration:none;font-weight:600}
+.edu-link:hover{text-decoration:underline}
+.edu-modules{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.edu-mod{display:flex;align-items:flex-start;gap:8px;padding:10px 12px;background:rgba(255,255,255,.7);border-radius:8px;font-size:.82rem}
+.edu-mod-icon{font-size:1.1rem;flex-shrink:0;margin-top:2px}
+.edu-mod b{color:var(--purple-dark);font-size:.82rem}
+.edu-mod span{color:var(--muted);font-size:.78rem}
+
+
+/* Manual Add Form */
+.add-form{{background:var(--card);border-radius:10px;padding:16px 20px;box-shadow:var(--shadow);margin-bottom:16px;border:1px dashed var(--accent);display:none}}
+.add-form.open{{display:block}}
+.add-form h4{{font-size:.9rem;margin-bottom:10px;color:var(--accent);display:flex;align-items:center;gap:6px}}
+.form-row{{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}}
+.form-row input,.form-row select{{padding:7px 12px;border:1px solid #ddd;border-radius:6px;font-size:.85rem;font-family:inherit;flex:1;min-width:120px}}
+.form-row input:focus,.form-row select:focus{{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(124,58,237,.15)}}
+.form-actions{{display:flex;gap:8px;margin-top:8px}}
+.btn-sm{{padding:6px 14px;border:none;border-radius:5px;font-size:.8rem;font-weight:600;cursor:pointer}}
+.btn-add{{background:var(--accent);color:#fff}}
+.btn-add:hover{{background:var(--purple-dark)}}
+.btn-cancel{{background:#f3f0fa;color:var(--accent)}}
+
+/* Image Export Card */
+.export-card{{background:#fff;border-radius:12px;padding:24px 28px;box-shadow:0 2px 24px rgba(0,0,0,.08);margin-top:16px;display:none}}
+.export-card.show{{display:block}}
+.export-card .ec-header{{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #f0e6ff}}
+.export-card .ec-header img{{width:40px;height:40px}}
+.export-card .ec-header .ec-title{{font-family:"Noto Serif SC",serif;font-size:1.1rem;color:var(--purple-dark)}}
+.export-card .ec-header .ec-sub{{font-size:.78rem;color:var(--muted)}}
+.export-item{{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f5f0fa}}
+.export-item:last-child{{border-bottom:none}}
+.export-item .ei-num{{width:20px;height:20px;border-radius:50%;background:var(--accent3);color:#fff;font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}}
+.export-item .ei-body{{flex:1}}
+.export-item .ei-time{{font-size:.72rem;color:var(--accent);font-weight:700}}
+.export-item .ei-title{{font-size:.88rem;font-weight:600;color:var(--ink);margin:1px 0}}
+.export-item .ei-venue{{font-size:.78rem;color:var(--accent2)}}
+.export-card .ec-footer{{margin-top:14px;padding-top:10px;border-top:1px solid #f0e6ff;display:flex;justify-content:space-between;align-items:center}}
+.export-card .ec-footer .brand{{font-size:.75rem;color:var(--muted)}}
+.export-card .ec-footer .brand b{{color:var(--accent)}}
+
+/* Route panel buttons */
+.route-actions{{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}}
+
+
+/* Transit info in export */
+.export-transit{{display:flex;align-items:center;gap:6px;padding:6px 0 6px 30px;font-size:.75rem;color:var(--muted);border-bottom:1px dashed #f0e6ff}}
+.export-transit .et-icon{{font-size:.9rem}}
+.export-transit b{{color:var(--accent2);font-weight:600}}
+
+
+/* Panel transit */
+.route-transit{{display:flex;align-items:center;gap:6px;padding:5px 0 5px 32px;font-size:.78rem;color:var(--muted);border-bottom:1px dashed #f0e6ff}}
+.route-transit b{{color:var(--accent2)}}
+
+</style>
+</head>
+<body>
+
+<!-- Hero with mascot -->
+<div class="hero">
+<div class="hero-inner">
+<img src="mascot.png" alt="WAIC EDU" class="hero-mascot">
+<div class="hero-text">
+<h1>WAIC 2026 · 教育活动日程板</h1>
+<div class="sub">同屏对比 · 打勾选课 · 生成你的专属路线</div>
+<div class="dates">7月17日 - 20日 · 上海</div>
+</div>
+</div>
+</div>
+
+<!-- QR Code Banner -->
+<div class="qr-banner">
+<img src="qr_waic_edu.jpg" alt="WAIC教育交流群" class="qr-img">
+<div class="qr-text">
+<h3>🎓 找教育搭子一起逛展？</h3>
+<p>扫码加入「WAIC教育交流」群，找教育主题相关的朋友一起逛展、交流、碰资源。</p>
+<div class="hint">二维码7天内有效（7月23日前），过期请重新联系丫丫老师（Elianyang99）。</div>
+</div>
+</div>
+
+<div class="container">
+
+
+<!-- WaytoAGI EDU Section -->
+<div class="edu-section">
+<div class="edu-header">
+<img src="mascot.png" alt="魔法小鹿" class="edu-mascot">
+<div class="edu-intro">
+<h2>WaytoAGI 教育版 <span style="font-weight:300;font-size:.85rem;opacity:.8">让更多的选择被看见</span></h2>
+<p>依托900万用户开源社区，缩小数字鸿沟，推开阻挡在普通人面前的门。我们的作品已走进WAIC 2026、2026CCF首届全国科普大会、腾讯明湾黑客松等现场。教育版内容正在持续收录中，感谢 zima 老师提供信息。</p>
+<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+<a href="https://waytoagi.feishu.cn/wiki/GPm9w44eVia6TXkUcNkcvfXRnsh" target="_blank" class="edu-link">📚 查看已有收录 →</a>
+<a href="https://waytoagi.feishu.cn/wiki/Wupyw4JX6iZg5rkbFcDch37Indf" target="_blank" class="edu-link" style="color:var(--accent3)">✍️ 欢迎投稿 →</a>
+</div>
+</div>
+</div>
+<div class="edu-modules">
+<div class="edu-mod"><span class="edu-mod-icon">🌱</span><div><b>01 迎新枢纽</b><br><span>新人指引与社区入口</span></div></div>
+<div class="edu-mod"><span class="edu-mod-icon">🚀</span><div><b>02 启航！AI青少年学习</b><br><span>少儿AI春晚 · AI教育火种车</span></div></div>
+<div class="edu-mod"><span class="edu-mod-icon">💡</span><div><b>03 赋能！教育者与家长智库</b><br><span>教师AI工具箱 · 家长指南</span></div></div>
+<div class="edu-mod"><span class="edu-mod-icon">💕</span><div><b>04 向善！AI公益行动派</b><br><span>AI FOR GOOD · 教育公平</span></div></div>
+<div class="edu-mod"><span class="edu-mod-icon">🎪</span><div><b>05 共创！全球活动与展厅</b><br><span>WAIC · CCF科普大会 · 腾讯黑客松</span></div></div>
+<div class="edu-mod"><span class="edu-mod-icon">☕</span><div><b>06 广场！互动交流与许愿池</b><br><span>教育者社群 · 资源对接</span></div></div>
+<div class="edu-mod"><span class="edu-mod-icon">🤝</span><div><b>07 招募！共建者大本营</b><br><span>志愿者 · 合作伙伴招募</span></div></div>
+<div class="edu-mod"><span class="edu-mod-icon">🎓</span><div><b>08 公示！教育版公示墙</b><br><span>项目进展 · 成果展示</span></div></div>
+</div>
+</div>
+
+<!-- Quick links -->
+<div class="links-bar">
+<a class="link-card" href="https://waic-guide.waytoagi.com" target="_blank"><h4>📋 参访指南</h4><p>175场官方论坛 · 30秒生成路线</p></a>
+<a class="link-card" href="https://waic.waytoagi.com" target="_blank" style="border-top-color:var(--accent3)"><h4>🎉 Side Events</h4><p>32场周边活动 · 报名入口</p></a>
+<a class="link-card" href="https://my.feishu.cn/wiki/QH2AwCh7EiqWfbk3c0OcfalDnft" target="_blank" style="border-top-color:var(--gold)"><h4>🔗 报名汇总</h4><p>飞书文档 · 一站式查看</p></a>
+</div>
+
+<div class="stats-row">
+<div class="stat"><div class="num">175</div><div class="label">官方论坛</div></div>
+<div class="stat"><div class="num">9</div><div class="label">教育论坛</div></div>
+<div class="stat"><div class="num">32</div><div class="label">Side Event</div></div>
+<div class="stat"><div class="num">4</div><div class="label">核心场馆</div></div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+<div class="tab active" data-tab="schedule">📅 日程板</div>
+<div class="tab" data-tab="myroute">🎯 我的路线 <span id="route-count" style="font-size:.68rem;background:var(--accent3);color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px;display:none">0</span></div>
+<div class="tab" data-tab="venues">🏛 场馆+交通</div>
+</div>
+
+<!-- Tab 1: Schedule -->
+<div class="tab-panel active" id="panel-schedule">
+<div class="day-header">7月17日（周五）<span class="tag">第一天</span></div>
+<div class="time-row"><div class="time-label">全天</div>
+<div class="event-card side" data-id="BOOTH_D1">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="BOOTH_D1"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">全天开放</div>
+<h3>WaytoAGI教育版 · 小朋友AI作品展</h3>
+<div class="venue">西岸国际会展中心 4楼公共区</div>
+<div class="desc">🔥 <b>不用验票！</b>没抢到票的朋友直接扶梯上四楼公共区。WaytoAGI教育版的小朋友在现场摆摊展示AI作品。<br>⚠️ 17:00后无法进场，请提前到达。<br>📖 <a href="https://mp.weixin.qq.com/s/v5rH0fdtFxhyfTZ69kqcjQ" target="_blank" style="color:var(--accent);text-decoration:underline">了解更多小朋友的故事 →</a></div>
+<div class="tags"><span class="tag-sm">免费入场</span><span class="tag-sm">儿童作品</span><span class="tag-sm">西岸4楼</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">14:00-17:30</div>
+<div class="event-card edu" data-id="0">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="0"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">14:00-17:30</div>
+<h3>"人机共育·重塑大学" 人工智能+教育论坛</h3>
+<div class="venue">世博中心</div>
+<div class="desc">官方论坛·教育与人才发展类别。AI对高等教育的重塑、人才培养模式变革。</div>
+<div class="tags"><span class="tag-sm">官方论坛</span><span class="tag-sm">高教</span><span class="tag-sm">世博中心</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">14:00-17:00</div>
+<div class="event-card edu" data-id="1">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="1"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">14:00-17:00</div>
+<h3>"智教浦江2026" 人工智能教育实践创新论坛</h3>
+<div class="venue">世博展览馆</div>
+<div class="desc">华东师大联合主办。高校智慧课程、教师数智素养、教育数字化转型。同步举办第三届中小学AI与科技教育大会。</div>
+<div class="tags"><span class="tag-sm">高教+K12</span><span class="tag-sm">实践创新</span><span class="tag-sm">世博展览馆</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">18:30-</div><div class="parallel-cards">
+<div class="event-card side" data-id="2">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="2"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">18:30-</div>
+<h3>WAIC Afterparty: 出海增长 · 港科大Networking</h3>
+<div class="venue">西岸·港科大上海中心37层</div>
+<div class="desc">创新壬主办。</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">西岸</span></div>
+</div></div>
+<div class="event-card side" data-id="3">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="3"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">18:30-</div>
+<h3>WAIC「握手局」: 带一个朋友来</h3>
+<div class="venue">西岸</div>
+<div class="desc">甲子Builders × 达晨财智。</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">社交</span></div>
+</div></div>
+<div class="event-card side" data-id="4">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="4"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">18:30-</div>
+<h3>AI创业秘聊局 · AI全球化专场</h3>
+<div class="venue">徐汇（报名后看地址）</div>
+<div class="desc">赤道象限 × 模速空间。</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">创业</span></div>
+</div></div>
+</div></div>
+<div class="time-row"><div class="time-label">18:30-22:00</div>
+<div class="event-card night" data-id="5">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="5"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">18:30-22:00</div>
+<h3>WAIC UP! AI三极夜话</h3>
+<div class="venue">张江会场光空间</div>
+<div class="desc">WAIC UP! × 钛媒体。全球AI创新者夜间思享会。</div>
+<div class="tags"><span class="tag-sm">夜场</span><span class="tag-sm">Side Event</span><span class="tag-sm">张江</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">19:30-22:00</div>
+<div class="event-card side" data-id="6">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="6"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">19:30-22:00</div>
+<h3>今晚的API · WAIC After Hours</h3>
+<div class="venue">徐汇·老沪闵路1226</div>
+<div class="desc">源码资本 × TTC × 亚马逊云 × 硅星人。</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">徐汇</span></div>
+</div></div>
+</div>
+<div class="day-header">7月18日（周六）<span class="tag">第二天·密度最高</span></div>
+<div class="time-row"><div class="time-label">全天</div>
+<div class="event-card side" data-id="BOOTH_D2">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="BOOTH_D2"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">全天开放</div>
+<h3>WaytoAGI教育版 · 小朋友AI作品展</h3>
+<div class="venue">西岸国际会展中心 4楼公共区</div>
+<div class="desc">🔥 <b>不用验票！</b>没抢到票的朋友直接扶梯上四楼公共区。WaytoAGI教育版的小朋友在现场摆摊展示AI作品。<br>⚠️ 17:00后无法进场，请提前到达。<br>📖 <a href="https://mp.weixin.qq.com/s/v5rH0fdtFxhyfTZ69kqcjQ" target="_blank" style="color:var(--accent);text-decoration:underline">了解更多小朋友的故事 →</a></div>
+<div class="tags"><span class="tag-sm">免费入场</span><span class="tag-sm">儿童作品</span><span class="tag-sm">西岸4楼</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">09:00-17:00</div><div class="parallel-cards">
+<div class="event-card edu" data-id="7">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="7"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">09:00-17:00</div>
+<h3>"智教浦江2026" + 第三届中小学AI与科技教育大会</h3>
+<div class="venue">世博展览馆</div>
+<div class="desc">含教育局局长圆桌、《中小学教育数字化转型区域进展报告》发布。</div>
+<div class="tags"><span class="tag-sm">官方论坛</span><span class="tag-sm">K12</span><span class="tag-sm">政策</span></div>
+</div></div>
+<div class="event-card edu" data-id="8">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="8"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">09:00-17:00</div>
+<h3>希沃 AI+教育 实践展示</h3>
+<div class="venue">世博展览馆 H1-B424</div>
+<div class="desc">"上海人工智能教育（国际）平台"发布（全国首个）；教学大模型演示；实践工作坊。</div>
+<div class="tags"><span class="tag-sm">平台发布</span><span class="tag-sm">教学大模型</span><span class="tag-sm">工作坊</span></div>
+</div></div>
+<div class="event-card edu" data-id="9">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="9"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">09:00-17:00</div>
+<h3>北电数智 · AI教育互动体验</h3>
+<div class="venue">世博展览馆 H1-A1032</div>
+<div class="desc">"AI赋能民生福祉"。五类互动：AI教育、家医助手、AI科研、创作、工业。</div>
+<div class="tags"><span class="tag-sm">互动体验</span><span class="tag-sm">教育普惠</span></div>
+</div></div>
+</div></div>
+<div class="time-row"><div class="time-label">15:00-18:00</div>
+<div class="event-card side" data-id="10">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="10"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">15:00-18:00</div>
+<h3>AI TASTE PARTY</h3>
+<div class="venue">AGI Bar·红杉创新加速器</div>
+<div class="desc">红杉科创 × 火山引擎 × AGI Bar。</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">社交</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">17:30-20:00</div>
+<div class="event-card side" data-id="11">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="11"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">17:30-20:00</div>
+<h3>蚂蚁开源 × WaytoAGI: Agent创业局</h3>
+<div class="venue">世博天地 AOKKA Coffee</div>
+<div class="desc">蚂蚁开源 × WaytoAGI联合主办。</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">WaytoAGI</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">19:00-22:30</div>
+<div class="event-card side" data-id="12">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="12"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">19:00-22:30</div>
+<h3>PROBLEM MARKET × HACKATHON 黑客松</h3>
+<div class="venue">Creekstone</div>
+<div class="desc">Creekstone × 火山引擎 × V-START。</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">黑客松</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">晚间</div>
+<div class="event-card side" data-id="13">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="13"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">晚间</div>
+<h3>WAIC AI创作者大会</h3>
+<div class="venue">张江科学会堂</div>
+<div class="desc">WAIC × 哈佛商业评论中国。</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">张江</span></div>
+</div></div>
+</div>
+<div class="day-header">7月19日（周日）<span class="tag hl">你的重点日</span></div>
+<div class="time-row"><div class="time-label">全天</div>
+<div class="event-card side" data-id="BOOTH_D3">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="BOOTH_D3"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">全天开放</div>
+<h3>WaytoAGI教育版 · 小朋友AI作品展</h3>
+<div class="venue">西岸国际会展中心 4楼公共区</div>
+<div class="desc">🔥 <b>不用验票！</b>没抢到票的朋友直接扶梯上四楼公共区。WaytoAGI教育版的小朋友在现场摆摊展示AI作品。<br>⚠️ 17:00后无法进场，请提前到达。<br>📖 <a href="https://mp.weixin.qq.com/s/v5rH0fdtFxhyfTZ69kqcjQ" target="_blank" style="color:var(--accent);text-decoration:underline">了解更多小朋友的故事 →</a></div>
+<div class="tags"><span class="tag-sm">免费入场</span><span class="tag-sm">儿童作品</span><span class="tag-sm">西岸4楼</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">09:30-12:00</div>
+<div class="event-card edu" data-id="14">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="14"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">09:30-12:00</div>
+<h3>WAIC YOUNG · 全球少年科创对话厅</h3>
+<div class="venue">西岸国际会展中心 2号厅C</div>
+<div class="desc">组委会主办 + 上海市科技艺术教育中心。全球少年AI对话。⚠️ 需Hi WAIC APP预约。</div>
+<div class="tags"><span class="tag-sm">青少年教育</span><span class="tag-sm">需预约</span><span class="tag-sm">西岸</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">09:00-17:00</div><div class="parallel-cards">
+<div class="event-card edu" data-id="15">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="15"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">09:00-17:00</div>
+<h3>希沃 AI+教育 展示 + 平台体验</h3>
+<div class="venue">世博展览馆 H1-B424</div>
+<div class="desc">教学大模型实机演示；AI+教育工作坊。</div>
+<div class="tags"><span class="tag-sm">体验</span><span class="tag-sm">工作坊</span></div>
+</div></div>
+<div class="event-card edu" data-id="16">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="16"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">09:00-17:00</div>
+<h3>北电数智 · AI教育互动（续）</h3>
+<div class="venue">世博展览馆 H1-A1032</div>
+<div class="desc">五类互动体验继续。教育资源普惠。</div>
+<div class="tags"><span class="tag-sm">互动体验</span><span class="tag-sm">教育普惠</span></div>
+</div></div>
+</div></div>
+<div class="time-row"><div class="time-label">全天</div>
+<div class="event-card edu" data-id="17">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="17"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">全天</div>
+<h3>"中国实践·全球共创" 教育国际研讨会</h3>
+<div class="venue">华东师范大学</div>
+<div class="desc">7/19-21同期。国际对话、中国方案、实践创新、共同体建设。⚠️ 不在WAIC场馆内。</div>
+<div class="tags"><span class="tag-sm">国际研讨会</span><span class="tag-sm">同期活动</span></div>
+</div></div>
+</div>
+
+<div class="time-row"><div class="time-label">15:00-18:00</div>
+<div class="event-card side" data-id="18">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="18"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">15:00-18:00</div>
+<h3>赛博酒保 · AGI Bar: The Bubble Test</h3>
+<div class="venue">徐汇北杨AI小镇</div>
+<div class="desc">AGI Bar知识蒸馏主办。</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">徐汇</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">18:30-21:30</div>
+<div class="event-card night" data-id="NEW_NIGHT">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="NEW_NIGHT"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">18:30-21:30</div>
+<h3>WaytoAGI社区分享会 · AI创作者之夜</h3>
+<div class="venue">上海世博展览馆 1A会议室</div>
+<div class="desc">🔥 <b>重磅分享</b>｜WaytoAGI社区联合多家科技社区，WAIC官方联动。<br><br>
+<b>🎤 主题分享（18:30-19:00）</b><br>
+• 丫丫老师 — AI火种车：18人，3000+公里，我们把AI火种带进大山的褶皱<br>
+• AJ — AI创作者进化之路<br>
+• 电子酒 — AI内容创作破局<br><br>
+<b>💬 主题圆桌（19:00-19:40）</b><br>
+AI x OPC，超级个体未来之路<br>
+嘉宾：AJ + 倪考梦 + 马梦佳 + 大狐<br><br>
+<b>🎤 开放麦（19:40-21:40）</b><br>
+现场开放麦，精彩即兴分享等你解锁！</div>
+<div class="tags"><span class="tag-sm">官方联动</span><span class="tag-sm">主题分享</span><span class="tag-sm">圆桌</span><span class="tag-sm">开放麦</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">19:00-22:00</div>
+<div class="event-card side" data-id="19">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="19"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">19:00-22:00</div>
+<h3>Context Infra交流会</h3>
+<div class="venue">徐汇北杨AI小镇</div>
+<div class="desc">Agent如何构建上下文资产？</div>
+<div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">徐汇</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">晚间</div><div class="parallel-cards">
+<div class="event-card night" data-id="20">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="20"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">晚间</div>
+<h3>WAIC UP! 青年观察家思享会 · 夜场</h3>
+<div class="venue">世博片区</div>
+<div class="desc">联合多家科技社区。教育科技社区聚集，社交重点。</div>
+<div class="tags"><span class="tag-sm">夜场</span><span class="tag-sm">社交重点</span></div>
+</div></div>
+<div class="event-card night" data-id="21">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="21"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">晚间</div>
+<h3>手工川年度见面会 · WAIC Afterparty</h3>
+<div class="venue">上海浦东</div>
+<div class="desc">Lovstudio.AI主办。</div>
+<div class="tags"><span class="tag-sm">夜场</span><span class="tag-sm">Side Event</span></div>
+</div></div>
+</div></div>
+<div class="day-header">7月20日（周一）<span class="tag">最后一天</span></div>
+<div class="time-row"><div class="time-label">全天</div>
+<div class="event-card side" data-id="BOOTH_D4">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="BOOTH_D4"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">全天开放</div>
+<h3>WaytoAGI教育版 · 小朋友AI作品展</h3>
+<div class="venue">西岸国际会展中心 4楼公共区</div>
+<div class="desc">🔥 <b>不用验票！</b>没抢到票的朋友直接扶梯上四楼公共区。WaytoAGI教育版的小朋友在现场摆摊展示AI作品。<br>⚠️ 17:00后无法进场，请提前到达。<br>📖 <a href="https://mp.weixin.qq.com/s/v5rH0fdtFxhyfTZ69kqcjQ" target="_blank" style="color:var(--accent);text-decoration:underline">了解更多小朋友的故事 →</a></div>
+<div class="tags"><span class="tag-sm">免费入场</span><span class="tag-sm">儿童作品</span><span class="tag-sm">西岸4楼</span></div>
+</div></div>
+</div>
+<div class="time-row"><div class="time-label">09:00-16:00</div><div class="parallel-cards">
+<div class="event-card edu" data-id="22">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="22"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">09:00-16:00</div>
+<h3>希沃 / 北电数智 展示（最后一天）</h3>
+<div class="venue">世博展览馆</div>
+<div class="desc">补逛、深度交流、收集名片。</div>
+<div class="tags"><span class="tag-sm">补逛</span></div>
+</div></div>
+<div class="event-card edu" data-id="23">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="23"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">09:00-16:00</div>
+<h3>"中国实践·全球共创" 教育研讨会（第三天）</h3>
+<div class="venue">华东师范大学</div>
+<div class="desc">最后一天。</div>
+<div class="tags"><span class="tag-sm">同期</span></div>
+</div></div>
+</div></div>
+<div class="time-row"><div class="time-label">全天</div>
+<div class="event-card side" data-id="24">
+<label class="check-label"><input type="checkbox" class="ev-check" data-id="24"><span class="checkmark"></span></label>
+<div class="card-body">
+<div class="time">全天</div>
+<h3>城市漫步 · 6条AI体验路线</h3>
+<div class="venue">上海市区</div>
+<div class="desc">大会官方6条City Walk路线。</div>
+<div class="tags"><span class="tag-sm">City Walk</span><span class="tag-sm">官方路线</span></div>
+</div></div>
+</div>
+
+</div>
+
+<!-- Tab 2: My Route -->
+<div class="tab-panel" id="panel-myroute">
+<div class="route-panel" style="position:relative">
+<h3>🎯 我的路线 <span class="count" id="route-count2">0 场活动</span></h3>
+<div id="route-list" class="route-empty">还没选活动。回到「日程板」打勾选择，或手动添加下方活动，这里会自动生成你的专属路线。</div>
+</div>
+<div class="add-form" id="add-form">
+<h4>➕ 手动添加活动</h4>
+<div class="form-row">
+<input type="text" id="add-time" placeholder="时间，如 14:00-16:00">
+<input type="text" id="add-title" placeholder="活动名称">
+</div>
+<div class="form-row">
+<input type="text" id="add-venue" placeholder="地点">
+</div>
+<div class="form-actions">
+<button class="btn-sm btn-add" onclick="addManual()">添加到路线</button>
+<button class="btn-sm btn-cancel" onclick="toggleForm()">取消</button>
+</div>
+</div>
+<div class="route-actions">
+<button class="btn btn-primary" onclick="toggleForm()">➕ 手动添加</button>
+<button class="btn btn-primary" onclick="exportRoute()">📋 复制文字</button>
+<button class="btn btn-outline" onclick="generateImage()">🖼 生成路线图</button>
+<button class="btn btn-outline" onclick="clearRoute()" style="border-color:#ef4444;color:#ef4444">🗑 清空</button>
+</div>
+<div class="export-card" id="export-card">
+<div class="ec-header">
+<img src="mascot.png" alt="WAIC EDU">
+<div><div class="ec-title">我的 WAIC 2026 教育活动路线</div><div class="ec-sub">WaytoAGI教育版负责人：丫丫老师 · waic-guide.waytoagi.com</div></div>
+</div>
+<div id="export-items"></div>
+<div class="ec-footer">
+<div class="brand"><b>WaytoAGI教育版负责人：丫丫老师</b> · 让更多的选择被看见</div>
+</div>
+</div>
+<h3>🎯 我的路线 <span class="count" id="route-count2">0 场活动</span></h3>
+<div id="route-list" class="route-empty">还没选活动。回到「日程板」打勾选择你感兴趣的活动，这里会自动生成你的专属路线。</div>
+</div>
+
+</div>
+
+<!-- Tab 3: Venues -->
+<div class="tab-panel" id="panel-venues">
+<h3 style="font-family:'Noto Serif SC',serif;margin-bottom:14px">🏛 四大场馆</h3>
+<div class="venue-grid"><div class="venue-card"><h3>世博中心</h3><div class="role">论坛主场</div><div class="addr">浦东新区世博大道1500号</div><div class="metro">🚇 地铁8号线中华艺术宫站3号口 / 13号线世博大道站1号口</div></div>
+<div class="venue-card"><h3>世博展览馆 ⭐</h3><div class="role">核心展区</div><div class="addr">博成路850号(北门) / 国展路1099号(南门)</div><div class="metro">🚇 13号线世博大道站1号口 / 8号线中华艺术宫站3号口</div></div>
+<div class="venue-card"><h3>西岸国际会展中心</h3><div class="role">未来科技体验</div><div class="addr">徐汇区龙耀路7号</div><div class="metro">🚇 7号线龙华中路站 / 11号线云锦路站或龙耀路站</div></div>
+<div class="venue-card"><h3>张江科学会堂</h3><div class="role">算力·芯片</div><div class="addr">浦东新区海科路1393号</div><div class="metro">🚇 2号线张江高科站→公交/打车约15分钟</div></div>
+</div>
+<h3 style="font-family:'Noto Serif SC',serif;margin:20px 0 10px">🚌 免费接驳巴士</h3>
+<div class="shuttle-row"><span class="shuttle-route">西岸 ↔ 张江</span><span class="shuttle-freq">约10分钟一班</span></div>
+<div class="shuttle-row"><span class="shuttle-route">西岸 ↔ 世博展览馆</span><span class="shuttle-freq">约15分钟一班</span></div>
+<div class="shuttle-row"><span class="shuttle-route">世博展览馆 ↔ 张江</span><span class="shuttle-freq">约15分钟一班 · 末班18:30</span></div>
+
+<p style="font-size:.8rem;color:var(--muted);margin-top:8px">出发前请确认站点，以 WAIC 官网和 Hi WAIC APP 当日发布为准。</p>
+<h3 style="font-family:'Noto Serif SC',serif;margin:20px 0 10px">⏰ 公众开放时间</h3>
+<div class="shuttle-row"><span class="shuttle-route">7月17日</span><span class="shuttle-freq">13:30-17:00（仅受邀）</span></div>
+<div class="shuttle-row"><span class="shuttle-route">7月18-19日</span><span class="shuttle-freq">09:00-17:00</span></div>
+<div class="shuttle-row"><span class="shuttle-route">7月20日</span><span class="shuttle-freq">09:00-16:00</span></div>
+</div>
+
+</div>
+
+<div class="footer">
+WAIC 2026 教育活动日程板 · WaytoAGI教育版出品 · 数据来源 waic-guide.waytoagi.com / waic.waytoagi.com<br>
+以 WAIC 官网和 Hi WAIC APP 当日发布为准
+</div>
+
+<script>
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// Transit time data
+const TRANSIT = {
+  '世博展览馆-西岸国际会展中心': {metro:'地铁13号线→换乘11号线，约45-55min', taxi:'打车约25-30min'},
+  '世博展览馆-张江科学会堂': {metro:'地铁13号线→换乘2号线+公交，约60-75min', taxi:'打车约30-40min'},
+  '世博中心-西岸国际会展中心': {metro:'地铁8号线→换乘11号线，约50-60min', taxi:'打车约25-35min'},
+  '世博中心-张江科学会堂': {metro:'地铁8号线→换乘2号线+公交，约65-80min', taxi:'打车约35-45min'},
+  '西岸国际会展中心-张江科学会堂': {metro:'地铁11号线→换乘2号线+公交，约70-90min', taxi:'打车约30-40min'},
+  '世博中心-世博展览馆': {metro:'步行约10-15min', taxi:'同片区，步行即可'},
+  '世博展览馆-世博中心': {metro:'步行约10-15min', taxi:'同片区，步行即可'},
+};
+
+function getTransit(from, to) {
+  const a = from.replace(/[\s·\*]/g,'');
+  const b = to.replace(/[\s·\*]/g,'');
+  for (const [k, v] of Object.entries(TRANSIT)) {
+    const [ka, kb] = k.split('-').map(s => s.replace(/[\s·\*]/g,''));
+    if ((a.includes(ka) && b.includes(kb)) || (a.includes(kb) && b.includes(ka))) return v;
+    if ((ka.includes(a) && kb.includes(b)) || (ka.includes(b) && kb.includes(a))) return v;
+  }
+  if (a === b || a.includes(b) || b.includes(a)) return {metro:'同场馆，步行可达', taxi:'同场馆'};
+  return null;
+}
+
+let manualId = 1000;
+const sel = new Map();
+
+document.querySelectorAll('.ev-check').forEach(cb=>{
+  cb.addEventListener('change',()=>{
+    const card = cb.closest('.event-card');
+    if(cb.checked){
+      card.classList.add('selected');
+      sel.set(cb.dataset.id,{
+        title: card.querySelector('h3').textContent,
+        time: card.querySelector('.time').textContent,
+        venue: card.querySelector('.venue').textContent
+      });
+    }else{
+      card.classList.remove('selected');
+      sel.delete(cb.dataset.id);
+    }
+    updateRoute();
+  });
+});
+
+function toggleForm() {
+  const f = document.getElementById('add-form');
+  f.classList.toggle('open');
+  if (f.classList.contains('open')) document.getElementById('add-time').focus();
+}
+
+function addManual() {
+  const time = document.getElementById('add-time').value.trim();
+  const title = document.getElementById('add-title').value.trim();
+  const venue = document.getElementById('add-venue').value.trim();
+  if (!time || !title) { alert('请至少填写时间和活动名称'); return; }
+  const id = 'manual-' + (manualId++);
+  sel.set(id, { title, time, venue: venue || '待定', manual: true });
+  document.getElementById('add-time').value = '';
+  document.getElementById('add-title').value = '';
+  document.getElementById('add-venue').value = '';
+  document.getElementById('add-form').classList.remove('open');
+  updateRoute();
+}
+
+function getSorted() {
+  return [...sel.entries()].sort((a, b) => {
+    const h = t => { const m = t.match(/(\d{1,2}):/); return m ? parseInt(m[1]) : 99; };
+    return h(a[1].time) - h(b[1].time);
+  });
+}
+
+function updateRoute() {
+  const n = sel.size;
+  const c1 = document.getElementById('route-count');
+  const c2 = document.getElementById('route-count2');
+  const el = document.getElementById('route-list');
+  if (n > 0) { c1.style.display = 'inline'; c1.textContent = n; c2.textContent = n + ' 场活动'; }
+  else { c1.style.display = 'none'; c2.textContent = '0 场活动'; }
+
+  if (n === 0) {
+    el.className = 'route-empty';
+    el.innerHTML = '还没选活动。回到「日程板」打勾选择，或手动添加，这里会自动生成你的专属路线。';
+    document.getElementById('export-card').classList.remove('show');
+    return;
+  }
+
+  const sorted = getSorted();
+  let html = '', lastV = '';
+  sorted.forEach(([id, ev], i) => {
+    const show = lastV && lastV !== ev.venue;
+    const tag = ev.manual ? '<span style="font-size:.65rem;background:#fdf3d7;color:#b8860b;padding:1px 6px;border-radius:6px;margin-left:4px">手动</span>' : '';
+    html += `<div class="route-item"><div class="route-num">${i+1}</div><div class="ri-body"><div class="ri-time">${ev.time}</div><div class="ri-title">${ev.title}${tag}</div><div class="ri-venue">📍 ${ev.venue}</div>`;
+    if (show) {
+      const t = getTransit(lastV, ev.venue);
+      if (t) {
+        html += `<div style="margin-top:4px;padding:4px 0;border-top:1px dashed #f0e6ff;font-size:.78rem;color:var(--muted)">🚌 <b style="color:var(--accent2)">公交</b>: ${t.metro}<br>🚕 <b style="color:var(--accent2)">打车</b>: ${t.taxi} <span style="font-size:.65rem;color:var(--muted)">仅供参考</span></div>`;
+      } else {
+        html += `<div style="color:var(--gold);font-size:.75rem;margin-top:3px">⚡ 需换场 → 建议查询导航</div>`;
+      }
+    }
+    html += `</div><span class="ri-remove" onclick="rm('${id}')">✕</span></div>`;
+    lastV = ev.venue;
+  });
+
+  const venues = [...new Set(sorted.map(([,e]) => e.venue))];
+  if (venues.length > 1) {
+    html += '<div class="route-visual"><div class="rv-title">📍 路线轨迹</div>';
+    venues.forEach((v, i) => {
+      html += `<div class="route-stop"><div class="rv-dot"></div><div>${v}</div></div>`;
+      if (i < venues.length - 1) html += '<div class="route-stop"><div class="rv-conn"></div><div class="rv-label">← 接驳巴士 →</div></div>';
+    });
+    html += '</div>';
+  }
+  el.className = '';
+  el.innerHTML = html;
+}
+
+function rm(id) {
+  const cb = document.querySelector(`.ev-check[data-id="${id}"]`);
+  if (cb) { cb.checked = false; cb.closest('.event-card').classList.remove('selected'); }
+  sel.delete(id);
+  updateRoute();
+}
+
+function clearRoute() {
+  document.querySelectorAll('.ev-check').forEach(cb => { cb.checked = false; cb.closest('.event-card').classList.remove('selected'); });
+  sel.clear();
+  updateRoute();
+}
+
+function exportRoute() {
+  if (!sel.size) { alert('还没选活动哦'); return; }
+  const sorted = getSorted();
+  let t = 'WAIC 2026 我的教育活动路线\n\n';
+  sorted.forEach(([id, ev], i) => {
+    t += `${i+1}. [${ev.time}] ${ev.title}\n   📍 ${ev.venue}\n`;
+    if (i > 0) {
+      const prev = sorted[i-1][1];
+      if (prev.venue !== ev.venue) {
+        const tr = getTransit(prev.venue, ev.venue);
+        if (tr) t += `   🚌 公交: ${tr.metro} | 🚕 打车: ${tr.taxi}\n`;
+      }
+    }
+    t += '\n';
+  });
+  t += '仅供参考 | 路线详情见 waic-guide.waytoagi.com';
+  navigator.clipboard.writeText(t).then(()=>alert('已复制！')).catch(()=>{
+    const a=document.createElement('textarea');a.value=t;
+    document.body.appendChild(a);a.select();document.execCommand('copy');
+    document.body.removeChild(a);alert('已复制！');
+  });
+}
+
+function generateImage() {
+  if (!sel.size) { alert('还没选活动哦'); return; }
+  const sorted = getSorted();
+  const ec = document.getElementById('export-card');
+  const items = document.getElementById('export-items');
+  let h = '';
+  let lastVenue = '';
+  sorted.forEach(([id, ev], i) => {
+    const tag = ev.manual ? ' <span style="font-size:.65rem;background:#fdf3d7;color:#b8860b;padding:1px 5px;border-radius:4px">手动</span>' : '';
+    h += `<div class="export-item"><div class="ei-num">${i+1}</div><div class="ei-body"><div class="ei-time">${ev.time}</div><div class="ei-title">${ev.title}${tag}</div><div class="ei-venue">📍 ${ev.venue}</div></div></div>`;
+    if (lastVenue && lastVenue !== ev.venue) {
+      const t = getTransit(lastVenue, ev.venue);
+      if (t) {
+        h += `<div class="export-transit"><span class="et-icon">🚌</span><span><b>公共交通：</b>${t.metro}</span></div>`;
+        h += `<div class="export-transit"><span class="et-icon">🚕</span><span><b>打车：</b>${t.taxi}</span> <span style="font-size:.65rem;color:var(--muted);margin-left:4px">仅供参考</span></div>`;
+      } else {
+        h += `<div class="export-transit"><span class="et-icon">🚌</span><span>建议查询导航获取路线</span></div>`;
+      }
+    }
+    lastVenue = ev.venue;
+  });
+  items.innerHTML = h;
+  ec.classList.add('show');
+  setTimeout(() => {
+    if (typeof html2canvas !== 'undefined') {
+      html2canvas(ec, { backgroundColor: '#ffffff', scale: 2, useCORS: true, logging: false })
+        .then(canvas => {
+          const link = document.createElement('a');
+          link.download = 'WAIC2026_我的教育路线.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+        })
+        .catch(() => showScreenshotTip());
+    } else {
+      showScreenshotTip();
+    }
+  }, 400);
+}
+
+function showScreenshotTip() {
+  const ec = document.getElementById('export-card');
+  ec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  alert('图片自动下载暂不可用，请长按截图或使用手机截屏功能保存下方路线图。');
+}
+</script>
+</body>
+</html>
