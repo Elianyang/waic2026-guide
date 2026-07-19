@@ -12,16 +12,16 @@ body{font-family:"Noto Sans SC",sans-serif;background:var(--paper);color:var(--i
 
 /* Hero */
 .hero{background:linear-gradient(135deg,#3B0764 0%,#5B21B6 40%,#7C3AED 100%);color:#fff;padding:0;position:relative;overflow:hidden}
-.hero-inner{display:flex;align-items:center;gap:24px;padding:40px 32px;max-width:1100px;margin:0 auto;position:relative;z-index:1}
-.hero-mascot{width:120px;height:120px;flex-shrink:0;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))}
+.hero-inner{display:flex;align-items:center;gap:16px;padding:24px 32px;max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.hero-mascot{width:80px;height:80px;flex-shrink:0;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))}
 .hero-text h1{font-family:"Noto Serif SC",serif;font-size:clamp(1.5rem,4vw,2.2rem);margin-bottom:4px}
 .hero-text .sub{font-size:.9rem;opacity:.8;font-weight:300}
 .hero-text .dates{display:inline-block;margin-top:10px;padding:5px 16px;border:1px solid rgba(255,255,255,.35);border-radius:24px;font-size:.8rem;letter-spacing:1.5px}
 .hero::after{content:"";position:absolute;top:-30%;right:-10%;width:50%;height:160%;background:radial-gradient(circle,rgba(255,255,255,.06) 0%,transparent 60%);pointer-events:none}
 
 /* QR Banner */
-.qr-banner{background:linear-gradient(135deg,var(--purple-dark),var(--purple));padding:24px 32px;display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;max-width:1100px;margin:0 auto}
-.qr-img{width:100px;height:100px;border-radius:8px;border:3px solid rgba(255,255,255,.8);flex-shrink:0;object-fit:cover}
+.qr-banner{background:linear-gradient(135deg,var(--purple-dark),var(--purple));padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;max-width:1100px;margin:0 auto}
+.qr-img{width:70px;height:70px;border-radius:8px;border:3px solid rgba(255,255,255,.8);flex-shrink:0;object-fit:cover}
 .qr-text{color:#fff;min-width:200px;max-width:500px}
 .qr-text h3{font-size:1.05rem;margin-bottom:4px}
 .qr-text p{font-size:.85rem;opacity:.85;line-height:1.5}
@@ -59,7 +59,7 @@ body{font-family:"Noto Sans SC",sans-serif;background:var(--paper);color:var(--i
 /* Time row */
 .time-row{display:flex;align-items:flex-start;margin-bottom:10px;gap:10px}
 .time-label{min-width:82px;font-size:.78rem;font-weight:700;color:var(--accent);padding-top:16px;flex-shrink:0;text-align:right}
-.parallel-cards{display:flex;gap:8px;flex:1;overflow-x:auto;padding-bottom:4px}
+.parallel-cards{display:flex;gap:8px;flex:1;flex-wrap:wrap;padding-bottom:4px}
 .parallel-cards::-webkit-scrollbar{height:3px}
 .parallel-cards::-webkit-scrollbar-thumb{background:#d0c8e8;border-radius:2px}
 
@@ -546,7 +546,7 @@ AI x OPC，超级个体未来之路<br>
 <div class="tags"><span class="tag-sm">Side Event</span><span class="tag-sm">徐汇</span></div>
 </div></div>
 </div>
-<!-- Removed standalone WAIC UP card - merged into WaytoAGI分享会 -->
+<div class="time-row"><div class="time-label">晚间</div>
 <div class="event-card night" data-id="21">
 <label class="check-label"><input type="checkbox" class="ev-check" data-id="21"><span class="checkmark"></span></label>
 <div class="card-body">
@@ -558,7 +558,7 @@ AI x OPC，超级个体未来之路<br>
 </div></div>
 </div></div>
 <div class="day-header">7月20日（周一）<span class="tag">最后一天</span></div>
-<div class="time-row"><div class="time-label">全天</div>
+<div class="time-row"><div class="time-label">全天</div><div class="parallel-cards">
 <div class="event-card side" data-id="BOOTH_D4">
 <label class="check-label"><input type="checkbox" class="ev-check" data-id="BOOTH_D4"><span class="checkmark"></span></label>
 <div class="card-body">
@@ -589,7 +589,7 @@ AI x OPC，超级个体未来之路<br>
 <div class="tags"><span class="tag-sm">同期</span></div>
 </div></div>
 </div></div>
-<div class="time-row"><div class="time-label">全天</div>
+<div class="time-row"><div class="time-label">全天</div><div class="parallel-cards">
 <div class="event-card side" data-id="24">
 <label class="check-label"><input type="checkbox" class="ev-check" data-id="24"><span class="checkmark"></span></label>
 <div class="card-body">
