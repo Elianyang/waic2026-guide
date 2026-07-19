@@ -64,7 +64,7 @@ body{font-family:"Noto Sans SC",sans-serif;background:var(--paper);color:var(--i
 .parallel-cards::-webkit-scrollbar-thumb{background:#d0c8e8;border-radius:2px}
 
 /* Event card */
-.event-card{background:var(--card);border-radius:8px;padding:12px 14px;box-shadow:var(--shadow);border-left:3px solid var(--accent);position:relative;transition:transform .15s,box-shadow .15s;flex:1;min-width:180px}
+.event-card{background:var(--card);border-radius:8px;padding:12px 14px;box-shadow:var(--shadow);border-left:3px solid var(--accent);position:relative;transition:transform .15s,box-shadow .15s;flex:1;min-width:180px;max-width:100%;box-sizing:border-box}
 .event-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(124,58,237,.1)}
 .event-card.edu{border-left-color:var(--accent)}
 .event-card.side{border-left-color:var(--accent3)}
